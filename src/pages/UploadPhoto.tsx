@@ -1,4 +1,4 @@
-import { ArrowRight, Upload, Image } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 import { Button } from "../components/Button";
 
 export const UploadPhoto = () => {

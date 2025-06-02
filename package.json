@@ -2,12 +2,15 @@
   "name": "zarpado-fit",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://havikhavik.github.io/Zarpado-Fit/",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview", 
+    "predeploy" : "npm run build",
+    "deploy" : "gh-pages -d dist"
   },
   "dependencies": {
     "lucide-react": "^0.511.0",
@@ -27,6 +30,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "gh-pages": "^6.3.0",
     "globals": "^16.0.0",
     "postcss": "8",
     "prettier": "^3.5.3",
