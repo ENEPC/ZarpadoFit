@@ -1,30 +1,39 @@
-import React from "react";
+import type { ReactNode } from "react";
 
-type ButtonProps = {
-  children: React.ReactNode;
+interface ButtonProps {
+  children: ReactNode;
   onClick?: () => void;
-  type?: "button" | "submit" | "reset";
+  variant?: "primary" | "secondary" | "outline";
   className?: string;
-  disabled?: boolean;
-};
+  type?: "button" | "submit" | "reset";
+}
 
-const Button: React.FC<ButtonProps> = ({
+export const Button = ({
   children,
   onClick,
-  type = "button",
+  variant = "primary",
   className = "",
-  disabled = false,
-}) => {
+  type = "button",
+}: ButtonProps) => {
+  const baseClasses =
+    "font-semibold py-3 rounded-lg transition-all duration-200";
+
+  const variantClasses = {
+    primary:
+      "bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white transform hover:scale-105",
+    secondary:
+      "bg-gray-700/50 hover:bg-gray-600 text-white border border-gray-600/50 hover:border-gray-500",
+    outline:
+      "border border-gray-600 hover:border-purple-500 text-white hover:bg-purple-500/10",
+  };
+
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
-      className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition disabled:opacity-50 ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
     >
       {children}
     </button>
   );
 };
-
-export default Button;
