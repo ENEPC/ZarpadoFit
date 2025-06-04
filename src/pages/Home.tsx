@@ -1,6 +1,7 @@
 import { ArrowRight, Zap, Sparkles, Star } from "lucide-react";
 import { FeatureCard } from "../components/FeatureCard";
 import { Button } from "../components/Button";
+import { Link } from "react-router-dom";
 
 export const Home = () => {
   return (
@@ -23,20 +24,20 @@ export const Home = () => {
               instante.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="primary"
-                className="px-8 py-4 text-lg hover:shadow-2xl hover:shadow-purple-500/25"
-                onClick={() => (window.location.href = "/virtual-try-on")}
-              >
-                Probar Ahora <ArrowRight className="inline ml-2 h-5 w-5" />
-              </Button>
-              <Button
+              <Link to="/virtual-try-on">
+                <Button
+                  variant="primary"
+                  className="px-8 py-4 text-lg hover:shadow-2xl hover:shadow-purple-500/25">
+                    Probar Ahora <ArrowRight className="inline ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button
                 variant="outline"
-                className="px-8 py-4 text-lg"
-                onClick={() => (window.location.href = "/register")}
-              >
-                Crear Cuenta Gratis
-              </Button>
+                className="px-8 py-4 text-lg">
+                  Crear Cuenta Gratis
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
