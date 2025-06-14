@@ -27,7 +27,7 @@ export const Recommendations = () => {
           <h1 className="text-4xl font-bold">Recomendaciones</h1>
         </div>
         
-        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <ul className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {fullRecommendItems.map((item) => (
             <div className="bg-slate-800/50 rounded-lg overflow-hidden group transition-transform duration-300 hover:-translate-y-1 cursor-pointer">
                 <Carta key={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
