@@ -1,6 +1,4 @@
-import { User, History, Key, Star, Image, Mail, Cross, LogOut, MessageCircleQuestion } from "lucide-react";
-import { Input } from "../components/Input";
-import { Button } from "../components/Button";
+import { User, History, Star, Image, LogOut, MessageCircleQuestion } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 export const Profile = () => {

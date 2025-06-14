@@ -1,10 +1,8 @@
-import { History, Image as ImageIcon, ThumbsUp, ThumbsUpIcon } from "lucide-react";
+import { Image as ThumbsUp } from "lucide-react";
 import Carta from "../components/Card";
 
-import camisaImagen from "../img/camisa.png";
-
 // Datos de ejemplo ampliados para que la cuadrícula se vea mejor (12 items)
-const fullHistoryItems = [
+const fullRecommendItems = [
   { id: 1, title: 'Camisa de Lino Blanca', date: 'Ayer', image: "camisa" },
   { id: 2, title: 'Pantalón Cargo Negro', date: 'Hace 3 días', image: "" },
   { id: 3, title: 'Sudadera con Capucha Gris', date: 'Hace 3 días', image: "" },
@@ -22,7 +20,6 @@ const fullHistoryItems = [
 export const Recommendations = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-4 md:p-8">
-      {/* 1. Usamos max-w-7xl para darle más espacio a la cuadrícula, como en el Header */}
       <div className="max-w-7xl mx-auto">
         
         <div className="flex items-center gap-4 mb-8">
@@ -30,10 +27,8 @@ export const Recommendations = () => {
           <h1 className="text-4xl font-bold">Recomendaciones</h1>
         </div>
         
-        {/* 2. Cambiamos ul a una cuadrícula (grid) responsiva */}
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {fullHistoryItems.map((item) => (
-            // 3. Esta es la nueva estructura de cada tarjeta
+            {fullRecommendItems.map((item) => (
             <div className="bg-slate-800/50 rounded-lg overflow-hidden group transition-transform duration-300 hover:-translate-y-1 cursor-pointer">
                 <Carta key={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
             </div>
