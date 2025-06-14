@@ -1,4 +1,4 @@
-import { User, History, Key, Star, Image, Mail, Cross, LogOut } from "lucide-react";
+import { User, History, Key, Star, Image, Mail, Cross, LogOut, MessageCircleQuestion } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 
@@ -59,14 +59,8 @@ export const Profile = () => {
               </div>
               <div className="bg-gray-800/50 p-4 rounded-lg">
                 <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                  <Mail className="h-5 w-5" />
-                  <span>Cambiar e-mail</span>
-                </h3>
-              </div>
-              <div className="bg-gray-800/50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                <Key className="h-5 w-5" />
-                <span>Cambiar contraseña</span>
+                <MessageCircleQuestion className="h-5 w-5" />
+                <span>Preguntas frecuentes</span>
                 </h3>
               </div>
               <div className="bg-gray-800/50 p-4 rounded-lg">
