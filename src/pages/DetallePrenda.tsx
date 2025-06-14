@@ -1,11 +1,14 @@
 import { useParams } from 'react-router-dom';
 import { prendasCatalogo } from '../data/prendas';
 import { Button } from '../components/Button';
-import { Heart, MessageSquare, ArrowRight } from 'lucide-react';
+import { Heart, MessageSquare, ArrowRight } from 'lucide-react'; // Ahora todos los íconos se usarán
+import { useFavorites } from '../context/FavoritesContext';
 
 export const DetallePrenda = () => {
   const { id } = useParams<{ id: string }>();
   const prenda = prendasCatalogo.find(p => p.id === parseInt(id || ''));
+  
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
   if (!prenda) {
     return (
@@ -14,11 +17,21 @@ export const DetallePrenda = () => {
       </div>
     );
   }
+  
+  const esFavorito = isFavorite(prenda.id);
+
+  const handleFavoriteClick = () => {
+    if (esFavorito) {
+      removeFavorite(prenda.id);
+    } else {
+      addFavorite(prenda.id);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-        
+        {/* Columna Izquierda: Imagen de la Prenda */}
         <div className="flex items-center justify-center bg-slate-800/50 rounded-lg p-4">
           <img 
             src={prenda.img} 
@@ -27,9 +40,9 @@ export const DetallePrenda = () => {
           />
         </div>
 
+        {/* Columna Derecha: Detalles y Acciones */}
         <div className="flex flex-col justify-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{prenda.nombre}</h1>
-          {/* La línea del precio que estaba aquí ha sido eliminada */}
+          <h1 className="text-4xl md:text-5xl font-bold mb-8">{prenda.nombre}</h1>
           <p className="text-gray-300 mb-8 leading-relaxed">{prenda.descripcion}</p>
 
           <div className="border-t border-b border-slate-700 py-6 mb-8">
@@ -46,16 +59,25 @@ export const DetallePrenda = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Button variant="secondary" className="flex-1 flex items-center justify-center">
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Comentar
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Comentar
             </Button>
-            <Button variant="secondary" className="flex-1 flex items-center justify-center">
-              <Heart className="mr-2 h-5 w-5" />
-              Añadir a Favoritos
+            
+            <Button 
+              variant={esFavorito ? 'primary' : 'secondary'}
+              className="flex-1 flex items-center justify-center"
+              onClick={handleFavoriteClick}
+            >
+              <Heart 
+                className={`mr-2 h-5 w-5 ${esFavorito ? 'text-white fill-current' : ''}`}
+              />
+              {esFavorito ? 'Quitar de Favoritos' : 'Añadir a Favoritos'}
             </Button>
+            
+            {/* AQUÍ ES DONDE SE USA EL ÍCONO Y SE SOLUCIONA LA ADVERTENCIA */}
             <Button variant="primary" className="flex-1 flex items-center justify-center">
-              <ArrowRight className="mr-2 h-5 w-5" />
-              Continuar
+                <ArrowRight className="mr-2 h-5 w-5" />
+                Continuar
             </Button>
           </div>
         </div>
