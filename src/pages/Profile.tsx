@@ -1,5 +1,21 @@
 import { User, History, Star, Image, LogOut, MessageCircleQuestion } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import MiniCarta from "../components/MiniCard"
+
+const fullHistoryItems = [
+  { id: 1, title: 'Camisa de Lino Blanca', date: 'Ayer', image: "camisa" },
+  { id: 2, title: 'Pantalón Cargo Negro', date: 'Hace 3 días', image: "" },
+  { id: 3, title: 'Sudadera con Capucha Gris', date: 'Hace 3 días', image: "" },
+  { id: 4, title: 'Zapatillas Urbanas Blancas', date: 'Hace 5 días', image: "" },
+  { id: 5, title: 'Chaqueta de Jean Azul', date: 'La semana pasada', image: "" },
+  { id: 6, title: 'Vestido de Verano Floral', date: 'La semana pasada', image: "" },
+  { id: 7, title: 'Gorra de Béisbol Negra', date: 'Hace 2 semanas', image: "" },
+  { id: 8, title: 'Gafas de Sol Aviador', date: 'Hace 2 semanas', image: "" },
+  { id: 9, title: 'Botas de Cuero Marrón', date: 'Hace 3 semanas', image: "" },
+  { id: 10, title: 'Camiseta Gráfica Vintage', date: 'Hace 1 mes', image: "" },
+  { id: 11, title: 'Shorts Deportivos Grises', date: 'Hace 1 mes', image: "" },
+  { id: 12, title: 'Mochila de Lona Negra', date: 'Hace 1 mes', image: "" },
+];
 
 export const Profile = () => {
   return (
@@ -27,15 +43,9 @@ export const Profile = () => {
                 <span>Historial Reciente</span>
               </h3>
               <div className="space-y-3">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="bg-gray-800/50 p-4 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white">Prueba #{item}</span>
-                      <span className="text-gray-400 text-sm">Hace 2 días</span>
-                    </div>
-                  </div>
+                {fullHistoryItems.slice(0,3).map((item) => (
+                  <MiniCarta key={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
                 ))}
-                
                 <NavLink to="/historial">
                   <div className="w-full text-center mb-4">
                     <h3 className="text-sm font-semibold text-white">
