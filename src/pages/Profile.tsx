@@ -1,6 +1,7 @@
 import { User, History, Key, Star, Image, Mail, Cross, LogOut, MessageCircleQuestion } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
+import { NavLink } from "react-router-dom";
 
 export const Profile = () => {
   return (
@@ -35,43 +36,56 @@ export const Profile = () => {
                       <span className="text-gray-400 text-sm">Hace 2 días</span>
                     </div>
                   </div>
-                  
                 ))}
-                <h3 className="text-s font-semibold text-white mb-4 flex items-center space-x-2">
-                  <span>Ver más</span>
-                </h3>
-              
+                
+                <NavLink to="/historial">
+                  <div className="w-full text-center mb-4">
+                    <h3 className="text-sm font-semibold text-white">
+                      Ver más
+                    </h3>
+                  </div>
+                </NavLink>
               </div>
             </div>
 
             <div>
-              <div className="bg-gray-800/50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                  <Star className="h-5 w-5" />
-                  <span>Favoritos</span>
-                </h3>
-              </div>
-              <div className="bg-gray-800/50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                  <Image className="h-5 w-5" />
-                  <span>Fotos subidas</span>
-                </h3>
-              </div>
-              <div className="bg-gray-800/50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                <MessageCircleQuestion className="h-5 w-5" />
-                <span>Preguntas frecuentes</span>
-                </h3>
-              </div>
-              <div className="bg-gray-800/50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                  <LogOut className="h-5 w-5" />
-                  <span>Cerrar sesion</span>
-                </h3>
-              </div>
-              
+              <NavLink to="/favoritos">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                    <Star className="h-5 w-5" />
+                    <span>Favoritos</span>
+                  </h3>
+                </div>
+              </NavLink>
 
+              <NavLink to="/fotos-subidas">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                    <Image className="h-5 w-5" />
+                    <span>Fotos subidas</span>
+                  </h3>
+                </div>
+              </NavLink>
+
+              <NavLink to="/faq">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                    <MessageCircleQuestion className="h-5 w-5" />
+                    <span>Preguntas frecuentes</span>
+                  </h3>
+                </div>
+              </NavLink>
+
+              <NavLink to="/logout">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                    <LogOut className="h-5 w-5" />
+                    <span>Cerrar sesión</span>
+                  </h3>
+                </div>
+              </NavLink>
             </div>
+
           </div>
           <div>
             <h1 className="text-4xl font-bold">Mi Perfil</h1>

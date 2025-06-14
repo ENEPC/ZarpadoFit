@@ -11,6 +11,7 @@ import { UploadPhoto } from "./pages/UploadPhoto";
 import { VirtualTryOn } from "./pages/VirtualTryOn";
 import { Profile } from "./pages/Profile";
 import { Catalog } from "./pages/Catalog";
+import { Recommendations } from "./pages/Recommendations";
 import { Routes, Route } from "react-router-dom";
 
 export const App = () => {
@@ -25,6 +26,7 @@ export const App = () => {
         <Route path="/virtual-try-on" element={<VirtualTryOn />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/catalog" element={<Catalog />} />
+        <Route path="/recommendations" element={<Recommendations/>} />
       </Routes>
     </div>
   );
