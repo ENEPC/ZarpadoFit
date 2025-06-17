@@ -28,7 +28,7 @@ export const Profile = () => {
             <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center">
               <User className="h-10 w-10 text-white" />
             </div>
-            <div>
+            <div className="select-none cursor-default">
               <h1 className="text-3xl font-bold text-white">Mi Perfil</h1>
               <p className="text-gray-300">Gestiona tu información personal</p>
             </div>
@@ -38,17 +38,17 @@ export const Profile = () => {
             
 
             <div className="bg-gray-700/30 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none cursor-default">
                 <History className="h-5 w-5" />
                 <span>Historial Reciente</span>
               </h3>
               <div className="space-y-3">
                 {fullHistoryItems.slice(0,3).map((item) => (
-                  <MiniCarta key={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
+                  <MiniCarta key={item.id} id={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
                 ))}
                 <NavLink to="/historial">
-                  <div className="w-full text-center mb-4">
-                    <h3 className="text-sm font-semibold text-white">
+                  <div className="w-full text-center mt-4">
+                    <h3 className="text-sm font-semibold text-white select-none">
                       Ver más
                     </h3>
                   </div>
@@ -59,7 +59,7 @@ export const Profile = () => {
             <div>
               <NavLink to="/favoritos">
                 <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
                     <Star className="h-5 w-5" />
                     <span>Favoritos</span>
                   </h3>
@@ -68,7 +68,7 @@ export const Profile = () => {
 
               <NavLink to="/fotos-subidas">
                 <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
                     <Image className="h-5 w-5" />
                     <span>Fotos subidas</span>
                   </h3>
@@ -77,7 +77,7 @@ export const Profile = () => {
 
               <NavLink to="/faq">
                 <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
                     <MessageCircleQuestion className="h-5 w-5" />
                     <span>Preguntas frecuentes</span>
                   </h3>
@@ -86,7 +86,7 @@ export const Profile = () => {
 
               <NavLink to="/logout">
                 <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
                     <LogOut className="h-5 w-5" />
                     <span>Cerrar sesión</span>
                   </h3>
