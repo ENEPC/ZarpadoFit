@@ -1,17 +1,21 @@
+// src/pages/Catalogo.tsx (Con la ruta de navegación corregida)
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { prendasCatalogo } from '../data/prendas';
 import type { PrendaDetallada } from '../data/prendas';
 
-export const Catalog = () => {
+export const Catalogo = () => {
   const [busqueda, setBusqueda] = useState('');
   const navigate = useNavigate();
 
   const recomendaciones = prendasCatalogo.slice(0, 4);
   const historial = prendasCatalogo.slice(0, 4).reverse();
 
+  // --- ¡CAMBIO CLAVE AQUÍ! ---
+  // Alineamos la ruta con la que está definida en App.tsx
   const irDetalle = (id: number) => {
-    navigate(`/detalle-prenda/${id}`);
+    navigate(`/prenda/${id}`);
   };
 
   const filtrar = (items: PrendaDetallada[]) =>
@@ -52,7 +56,6 @@ export const Catalog = () => {
                     />
                   </div>
                   <h3 className="text-lg font-semibold text-center">{item.nombre}</h3>
-                  {/* La línea de precio que estaba aquí ha sido eliminada */}
                 </div>
               ))}
             </div>
@@ -71,11 +74,10 @@ export const Catalog = () => {
                     <img
                       src={item.img}
                       alt={item.nombre}
-                      className="w-full h-full aspect-[4/s5] object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   <h3 className="text-lg font-semibold text-center">{item.nombre}</h3>
-                   {/* La línea de precio que estaba aquí ha sido eliminada */}
                 </div>
               ))}
             </div>

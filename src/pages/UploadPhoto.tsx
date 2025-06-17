@@ -14,7 +14,7 @@ export const UploadPhoto = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Upload Area */}
+         
           <div className="bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50">
             <div className="border-2 border-dashed border-gray-600 rounded-xl p-12 text-center hover:border-purple-500 transition-all duration-300">
               <Upload className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -33,7 +33,7 @@ export const UploadPhoto = () => {
             </div>
           </div>
 
-          {/* Tips */}
+          
           <div className="space-y-6">
             <div className="bg-gray-800/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-700/50">
               <h3 className="text-xl font-semibold text-white mb-4">
