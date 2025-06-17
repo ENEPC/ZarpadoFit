@@ -21,17 +21,14 @@ export const Recommendations = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        
         <div className="flex items-center gap-4 mb-8">
           <ThumbsUp className="h-8 w-8 text-purple-400" />
           <h1 className="text-4xl font-bold select-none">Recomendaciones</h1>
         </div>
         
-        <ul className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 py-10 px-10 bg-slate-800/50 rounded-lg">
             {fullRecommendItems.map((item) => (
-            <div className="bg-slate-800/50 rounded-lg overflow-hidden group transition-transform duration-300 hover:-translate-y-1 cursor-pointer">
-                <Carta key={item.id} id={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
-            </div>
+              <Carta key={item.id} id={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
           ))}
         </ul>
 
