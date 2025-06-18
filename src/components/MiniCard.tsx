@@ -16,7 +16,7 @@ const MiniCard: React.FC<MiniCartaProps> = ({id, imagen, nombre, fecha}) => {
     )?.[1];
 
     return (
-        <a href={"catalogue/"+id} className="block w-full bg-gray-800/50 p-4 rounded-lg h-20 group transition hover:bg-gray-700">
+        <a href={"prenda/"+id} className="block w-full bg-gray-800/50 p-4 rounded-lg h-20 group transition hover:bg-gray-700">
             <div className="flex items-center justify-between h-full space-x-4">
                 {imagen === "" ? (
                     <ImageIcon className="h-12 w-12 text-slate-500 group-hover:text-purple-400 transition-colors select-none" />
