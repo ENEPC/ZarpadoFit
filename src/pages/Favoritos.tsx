@@ -1,4 +1,4 @@
-// 1. Importa lo que necesitamos
+
 import { useFavorites } from '../context/FavoritesContext';
 import { prendasCatalogo } from '../data/prendas';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +32,7 @@ export const Favoritos = () => {
               <div
                 key={item.id}
                 className="cursor-pointer group"
-                onClick={() => navigate(`/detalle-prenda/${item.id}`)}
+                onClick={() => navigate(`/prenda/${item.id}`)}
               >
                 <div className="rounded-lg overflow-hidden mb-4 shadow-lg">
                   <img
