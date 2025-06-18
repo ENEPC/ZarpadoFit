@@ -71,7 +71,7 @@ export const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <NavLink icon={Home} label="Inicio" to="/" />
-            <NavLink icon={LayoutGrid} label="Catálogo" to="/catalogo" /> {/* 2. AÑADIR ENLACE ESCRITORIO */}
+            <NavLink icon={LayoutGrid} label="Catálogo" to="/catalog" /> {/* 2. AÑADIR ENLACE ESCRITORIO */}
             <NavLink icon={Camera} label="Probador" to="/virtual-try-on" />
             <NavLink icon={Upload} label="Subir Foto" to="/upload-photo" />
             <NavLink icon={User} label="Perfil" to="/profile" />
