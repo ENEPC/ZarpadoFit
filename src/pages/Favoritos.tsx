@@ -30,7 +30,20 @@ export const Favoritos = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 py-10 px-10 bg-slate-800/50 rounded-lg">
             {prendasFavoritas.map((item) => (
-              <Carta key={item.id} id={item.id} nombre={item.nombre} fecha={"Algun momento"} imagen={item.img}/>
+              // --- ¡CAMBIO PRINCIPAL AQUÍ! ---
+              // Envolvemos el componente <Carta> en un div para manejar el click.
+              // Esto hace que toda el área de la carta sea clickeable.
+              <div 
+                key={item.id} // La 'key' siempre va en el elemento más externo del map.
+                className="cursor-pointer group"
+              >
+                <Carta 
+                  id={item.id} 
+                  nombre={item.nombre} 
+                  fecha={"Algun momento"} 
+                  imagen={item.img}
+                />
+              </div>
             ))}
           </div>
         )}

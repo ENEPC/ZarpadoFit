@@ -14,7 +14,7 @@ interface CartaProps {
 const Card: React.FC<CartaProps> = ({id, imagen, nombre, fecha}) => {
     return (
         <div className="bg-slate-800/50 rounded-lg overflow-hidden group transition-transform duration-300 hover:-translate-y-1 cursor-pointer">
-            <a href={"catalogue/"+id}>
+            <a href={"prenda/"+id}>
                 {/* Recuadro para la imagen */}
                 <div className="aspect-[3/4] w-full bg-slate-700 flex items-center justify-center">
                     {imagen === "" ? (
