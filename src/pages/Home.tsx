@@ -1,4 +1,4 @@
-import { ArrowRight, Zap, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Zap, Sparkles, Star, Shirt } from "lucide-react";
 import { FeatureCard } from "../components/FeatureCard";
 import { Button } from "../components/Button";
 import { Link } from "react-router-dom";
@@ -27,15 +27,22 @@ export const Home = () => {
               <Link to="/virtual-try-on">
                 <Button
                   variant="primary"
-                  className="px-8 py-4 text-lg hover:shadow-2xl hover:shadow-purple-500/25">
-                    Probar Ahora <ArrowRight className="inline ml-2 h-5 w-5" />
+                  className="px-8 py-4 text-lg hover:shadow-2xl hover:shadow-purple-500/25"
+                >
+                  Probar Ahora <ArrowRight className="inline ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/register">
-                <Button
-                variant="outline"
-                className="px-8 py-4 text-lg">
+                <Button variant="outline" className="px-8 py-4 text-lg">
                   Crear Cuenta Gratis
+                </Button>
+              </Link>
+              <Link to="/catalog">
+                <Button
+                  variant="secondary"
+                  className="px-8 py-4 text-lg bg-gray-800 text-white hover:bg-gray-700 hover:text-purple-300 transition-all"
+                >
+                  Ver Catálogo <Shirt className="inline ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>

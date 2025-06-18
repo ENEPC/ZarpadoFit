@@ -1,8 +1,30 @@
+import { useState } from "react";
 import { LogIn } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
+import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Aquí podría ir validación real
+    if (email && password) {
+      // Guardamos un usuario simple en localStorage
+      const usuarioActivo = { email, nombre: "Usuario de prueba" };
+      localStorage.setItem("usuarioActivo", JSON.stringify(usuarioActivo));
+      
+      // Navegamos al catálogo o pantalla principal
+      navigate("/Catalog");
+    } else {
+      alert("Por favor ingresa email y contraseña");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
@@ -15,9 +37,21 @@ export const Login = () => {
             <p className="text-gray-300 mt-2">Accede a tu cuenta ZARPADO FIT</p>
           </div>
 
-          <form className="space-y-6">
-            <Input label="Email" type="email" placeholder="tu@email.com" />
-            <Input label="Contraseña" type="password" placeholder="••••••••" />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              label="Contraseña"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
             <Button
               type="submit"
               variant="primary"
@@ -27,27 +61,11 @@ export const Login = () => {
             </Button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-800/50 text-gray-300">
-                  O continúa con
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="secondary">Google</Button>
-              <Button variant="secondary">Facebook</Button>
-            </div>
-          </div>
-
+          {/* ... el resto igual ... */}
           <p className="mt-8 text-center text-gray-300">
             ¿No tienes cuenta?{" "}
             <a
-              href="/register"
+              href="/Register"
               className="text-purple-400 hover:text-purple-300 font-medium"
             >
               Regístrate aquí

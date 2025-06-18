@@ -8,9 +8,12 @@ import {
   Menu,
   X,
   Sparkles,
+
+  Settings,
   Heart,
   History,
   LayoutGrid, // 1. Importar el nuevo ícono para Catálogo
+
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -72,8 +75,12 @@ export const Header = () => {
             <NavLink icon={Camera} label="Probador" to="/virtual-try-on" />
             <NavLink icon={Upload} label="Subir Foto" to="/upload-photo" />
             <NavLink icon={User} label="Perfil" to="/profile" />
+
+            <NavLink icon={Settings} label="Ajustes" to="/settings" />
+
             <NavLink icon={Heart} label="Favoritos" to="/favoritos" />
             <NavLink icon={History} label="Historial" to="/historial" />
+
             <NavLink icon={LogIn} label="Iniciar Sesión" to="/login" />
             <NavLink icon={UserPlus} label="Registrarse" to="/register" />
           </div>
@@ -102,7 +109,17 @@ export const Header = () => {
             <NavLink icon={Heart} label="Favoritos" to="/favoritos" isMobile />
             <NavLink icon={History} label="Historial" to="/historial" isMobile />
             <NavLink icon={LogIn} label="Iniciar Sesión" to="/login" isMobile />
+
+            <NavLink icon={Settings} label="Ajustes" to="/settings" isMobile /> 
+            <NavLink
+              icon={UserPlus}
+              label="Registrarse"
+              to="/register"
+              isMobile
+            />
+
             <NavLink icon={UserPlus} label="Registrarse" to="/register" isMobile />
+
           </div>
         </div>
       )}
