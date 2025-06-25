@@ -216,7 +216,7 @@ export const VirtualTryOn = () => {
       }
     } catch (error) {
       console.error("Error al procesar:", error);
-      setError(error.message || "Error al conectar con el servidor");
+      setError((error as Error).message || "Error al conectar con el servidor");
     } finally {
       setIsLoading(false);
     }

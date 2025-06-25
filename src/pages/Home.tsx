@@ -33,7 +33,7 @@ export const Home = () => {
                 </Button>
               </Link>
               <Link to="/register">
-                <Button variant="outline" className="px-8 py-4 text-lg">
+                <Button className="px-8 py-4 text-lg">
                   Crear Cuenta Gratis
                 </Button>
               </Link>
