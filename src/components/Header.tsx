@@ -13,8 +13,9 @@ import {
   History,
   LayoutGrid, // 1. Importar el nuevo ícono para Catálogo
 } from "lucide-react";
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useBeforeUnload, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 interface NavLinkProps {
   icon: React.ElementType;
@@ -33,6 +34,8 @@ const NavLink = ({ icon: Icon, label, to, isMobile = false }: NavLinkProps) => {
     "bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-purple-400 border border-purple-500/30";
   const inactiveClasses = "text-gray-300 hover:text-white hover:bg-gray-800/50";
 
+  
+
   return (
     <Link
       to={to}
@@ -48,6 +51,7 @@ const NavLink = ({ icon: Icon, label, to, isMobile = false }: NavLinkProps) => {
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { usuario } = useAuth();
 
   return (
     <>
@@ -72,13 +76,20 @@ export const Header = () => {
               <NavLink icon={LayoutGrid} label="Catálogo" to="/catalog" />{" "}
               {/* 2. AÑADIR ENLACE ESCRITORIO */}
               <NavLink icon={Camera} label="Probador" to="/virtual-try-on" />
-              <NavLink icon={User} label="Perfil" to="/profile" />
-              <NavLink icon={Settings} label="Ajustes" to="/settings" />
-              <NavLink icon={Heart} label="Favoritos" to="/favoritos" />
-              <NavLink icon={History} label="Historial" to="/historial" />
-              <NavLink icon={LogIn} label="Iniciar Sesión" to="/login" />
-              <NavLink icon={UserPlus} label="Registrarse" to="/register" />
-            </div>
+              
+              
+              {usuario  ? (
+                <>
+                  <NavLink icon={User} label="Perfil" to="/profile" />
+                  <NavLink icon={Heart} label="Favoritos" to="/favoritos" />
+                  <NavLink icon={Settings} label="Ajustes" to="/settings" />
+                </>
+              ) : (
+                <>
+                  <NavLink icon={LogIn} label="Iniciar Sesión" to="/login" />
+                  <NavLink icon={UserPlus} label="Registrarse" to="/register" />
+                </>
+              )}
 
             {/* Mobile menu button */}
             <div className="md:hidden">
@@ -91,6 +102,7 @@ export const Header = () => {
             </div>
           </div>
         </div>
+      </div>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (

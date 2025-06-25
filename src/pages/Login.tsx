@@ -3,11 +3,13 @@ import { LogIn } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"
 
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { setUsuario } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +19,7 @@ export const Login = () => {
       // Guardamos un usuario simple en localStorage
       const usuarioActivo = { email, nombre: "Usuario de prueba" };
       localStorage.setItem("usuarioActivo", JSON.stringify(usuarioActivo));
+      setUsuario(usuarioActivo);
       
       // Navegamos al catálogo o pantalla principal
       navigate("/Catalog");

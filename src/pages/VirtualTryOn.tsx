@@ -453,7 +453,7 @@ export const VirtualTryOn = () => {
               Seleccionar Prenda
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              {[...Array(4)].map((_, index) => (
+              {[...Array(1)].map((_, index) => (
                 <div key={`clothing-slot-${index}`} className="relative">
                   <div
                     className={`aspect-square bg-gray-700/50 rounded-lg border-2 ${selectedClothingIndex === index ? "border-purple-500" : "border-gray-600"} ${dragActiveClothing === index ? "border-purple-500" : ""} flex items-center justify-center relative cursor-pointer`}

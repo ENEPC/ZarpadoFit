@@ -10,6 +10,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { FavoritesProvider } from './context/FavoritesContext.tsx';
 import { VirtualTryOnProvider } from './context/VirtualTryOnContext.tsx';
 import { HistoryProvider } from './context/HistoryContext.tsx'; // <--- IMPORTAR
+import { AuthProvider } from "./context/AuthContext";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <FavoritesProvider>
         <VirtualTryOnProvider>
           <HistoryProvider> {/* <--- ENVOLVER CON EL HISTORY PROVIDER */}
-            <App />
+            <AuthProvider>
+              <App />
+            </AuthProvider>
           </HistoryProvider>
         </VirtualTryOnProvider>
       </FavoritesProvider>
