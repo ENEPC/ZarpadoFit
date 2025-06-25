@@ -12,7 +12,7 @@ export const VirtualTryOn = () => {
   // Estados para las imágenes
   const [userImage, setUserImage] = useState<string | null>(null);
   const [clothingImages, setClothingImages] = useState<(string | null)[]>(
-    Array(4).fill(null)
+    Array(1).fill(null)
   );
   const [selectedClothingIndex, setSelectedClothingIndex] = useState<
     number | null
@@ -526,9 +526,13 @@ export const VirtualTryOn = () => {
               className="w-full mt-4"
               onClick={handleGenerate}
               disabled={
-                !userImage || selectedClothingIndex === null || isLoading
+                !userImage ||
+                selectedClothingIndex === null ||
+                !clothingImages[selectedClothingIndex] ||
+                isLoading
               }
             >
+            
               {isLoading ? "Procesando..." : "Procesar con IA"}
             </Button>
           </div>

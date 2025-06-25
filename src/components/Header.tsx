@@ -81,7 +81,6 @@ export const Header = () => {
               {usuario  ? (
                 <>
                   <NavLink icon={User} label="Perfil" to="/profile" />
-                  <NavLink icon={Heart} label="Favoritos" to="/favoritos" />
                   <NavLink icon={Settings} label="Ajustes" to="/settings" />
                 </>
               ) : (

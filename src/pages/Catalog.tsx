@@ -19,6 +19,7 @@ const Catalog = () => {
 
   const recomendaciones = prendasCatalogo.slice(0, 4);
 
+ //TODO conectar con la API para obtener el historial real
   const historial: Prenda[] = [
     {
       nombre: "Campera",

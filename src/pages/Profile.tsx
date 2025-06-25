@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import MiniCarta from "../components/MiniCard"
 import { useAuth } from "../context/AuthContext";
 
+//TODO conectar con la API para obtener el historial real
 const fullHistoryItems = [
   { id: 1, title: 'Camisa de Lino Blanca', date: 'Ayer', image: "camisa" },
   { id: 2, title: 'Pantalón Cargo Negro', date: 'Hace 3 días', image: "" },
