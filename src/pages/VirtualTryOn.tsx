@@ -14,9 +14,6 @@ export const VirtualTryOn = () => {
   const [clothingImages, setClothingImages] = useState<(string | null)[]>(
     Array(1).fill(null)
   );
-  const [selectedClothingIndex, setSelectedClothingIndex] = useState<
-    number | null
-  >(null);
   const [response, setResponse] = useState<string | null>(null);
 
   // Estados para UI y control
@@ -44,7 +41,6 @@ export const VirtualTryOn = () => {
       const newImages = [...clothingImages];
       newImages[targetIndex] = prendaParaProbar.img;
       setClothingImages(newImages);
-      setSelectedClothingIndex(targetIndex);
       setPrendaParaProbar(null);
     }
   }, [prendaParaProbar, clothingImages, setPrendaParaProbar]);
@@ -131,12 +127,13 @@ export const VirtualTryOn = () => {
       return;
     }
 
-    if (selectedClothingIndex === null) {
-      setError("Por favor, selecciona una prenda para probar");
+    const clothingImageUrl = clothingImages.find((img) => img !== null);
+
+    if (!clothingImageUrl) {
+      setError("Por favor, subí al menos una prenda para probar");
       return;
     }
 
-    const clothingImageUrl = clothingImages[selectedClothingIndex];
     if (!clothingImageUrl) {
       setError("No se ha seleccionado ninguna prenda");
       return;
@@ -338,14 +335,9 @@ export const VirtualTryOn = () => {
     const newImages = [...clothingImages];
     newImages[index] = null;
     setClothingImages(newImages);
-    if (selectedClothingIndex === index) setSelectedClothingIndex(null);
     if (clothingFileInputRefs.current[index]) {
       clothingFileInputRefs.current[index]!.value = "";
     }
-  };
-
-  const selectClothing = (index: number) => {
-    setSelectedClothingIndex(clothingImages[index] ? index : null);
   };
 
   return (
@@ -392,10 +384,10 @@ export const VirtualTryOn = () => {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Sección de la foto del usuario */}
-          <div className="bg-gray-800/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-700/50">
-            <h3 className="text-xl font-semibold text-white mb-4">Tu Foto</h3>
+          <div className="bg-gray-800/50 backdrop-blur-xl p-2 md:p-6 rounded-2xl border border-gray-700/50">
+            <h3 className="text-xl font-semibold text-white mb-7 sm:mb-4 p-2 ">Tu Foto</h3>
             <div
               className={`aspect-[3/4] bg-gray-700/50 rounded-xl border-2 ${dragActive ? "border-purple-500" : "border-dashed border-gray-600"} flex items-center justify-center relative`}
               onDragEnter={handleUserDrag}
@@ -420,7 +412,9 @@ export const VirtualTryOn = () => {
               ) : (
                 <div className="text-center p-4">
                   <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-300">Arrastra tu foto aquí o</p>
+                  <p className="text-gray-300">
+                    <span className="hidden md:inline">Arrastra tu foto aquí o</span>
+                  </p>
                   <Button
                     variant="secondary"
                     className="mt-4"
@@ -448,16 +442,15 @@ export const VirtualTryOn = () => {
           </div>
 
           {/* Sección de selección de prendas */}
-          <div className="bg-gray-800/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-700/50">
-            <h3 className="text-xl font-semibold text-white mb-4">
+          <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 p-2 md:p-6">
+            <h3 className="text-xl font-semibold text-white p-2 sm:mb-4 ">
               Seleccionar Prenda
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="">
               {[...Array(1)].map((_, index) => (
                 <div key={`clothing-slot-${index}`} className="relative">
                   <div
-                    className={`aspect-square bg-gray-700/50 rounded-lg border-2 ${selectedClothingIndex === index ? "border-purple-500" : "border-gray-600"} ${dragActiveClothing === index ? "border-purple-500" : ""} flex items-center justify-center relative cursor-pointer`}
-                    onClick={() => selectClothing(index)}
+                    className={`aspect-[3/4] bg-gray-700/50 rounded-xl border-dashed border-2 border-gray-600 ${dragActiveClothing === index ? "border-purple-500" : ""} flex items-center justify-center relative cursor-pointer`}
                     onDragEnter={(e) => handleClothingDrag(index, e)}
                     onDragLeave={(e) => handleClothingDrag(index, e)}
                     onDragOver={(e) => handleClothingDrag(index, e)}
@@ -479,15 +472,10 @@ export const VirtualTryOn = () => {
                         >
                           <X className="h-4 w-4 text-white" />
                         </button>
-                        {selectedClothingIndex === index && (
-                          <div className="absolute top-1 left-1 bg-purple-500 rounded-full p-1">
-                            <Check className="h-4 w-4 text-white" />
-                          </div>
-                        )}
                       </>
                     ) : (
                       <div className="text-center p-2">
-                        <Image className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                         <Button
                           variant="secondary"
                           size="md"
@@ -527,8 +515,7 @@ export const VirtualTryOn = () => {
               onClick={handleGenerate}
               disabled={
                 !userImage ||
-                selectedClothingIndex === null ||
-                !clothingImages[selectedClothingIndex] ||
+                clothingImages.every((img) => img === null) ||
                 isLoading
               }
             >
@@ -539,7 +526,7 @@ export const VirtualTryOn = () => {
 
           {/* Sección de resultados */}
           {generateEvent && (
-            <div className="bg-gray-800/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-700/50">
+            <div className="bg-gray-800/50 backdrop-blur-xl p-2 md:p-6 rounded-2xl border border-gray-700/50">
               <h3 className="text-xl font-semibold text-white mb-4">
                 Resultado
               </h3>
