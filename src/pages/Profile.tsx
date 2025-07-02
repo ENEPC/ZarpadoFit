@@ -34,7 +34,7 @@ export const Profile = () => {
       <div className="max-w-4xl mx-auto">
         
         
-        <div className="bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50">
+        <div className="bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50 mb-8 md:mb-4">
           <div className="flex items-center space-x-6 mb-8">
             <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center">
               <User className="h-10 w-10 text-white" />
@@ -76,7 +76,7 @@ export const Profile = () => {
                   </h3>
                 </div>
               </NavLink>
-
+              
               <NavLink to="/fotos-subidas">
                 <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
                   <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">

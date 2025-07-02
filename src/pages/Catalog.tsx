@@ -102,7 +102,7 @@ const Catalog = () => {
             <h2 className="text-3xl font-semibold mb-6">
               Recomendaciones para ti
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filtrar(recomendaciones).map((item) => (
                 <div
                   key={item.id}
@@ -128,7 +128,7 @@ const Catalog = () => {
             <h2 className="text-3xl font-semibold mb-6">
               Basado en tu historial
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filtrar(historial as PrendaDetallada[]).map((item) => (
                 <div
                   key={item.id}
