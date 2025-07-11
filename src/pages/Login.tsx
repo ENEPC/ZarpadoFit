@@ -3,7 +3,7 @@ import { LogIn } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,20 +11,32 @@ export const Login = () => {
   const navigate = useNavigate();
   const { setUsuario } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Aquí podría ir validación real
-    if (email && password) {
-      // Guardamos un usuario simple en localStorage
-      const usuarioActivo = { email, nombre: "Usuario de prueba" };
-      localStorage.setItem("usuarioActivo", JSON.stringify(usuarioActivo));
-      setUsuario(usuarioActivo);
-      
-      // Navegamos al catálogo o pantalla principal
-      navigate("/Catalog");
-    } else {
+    if (!email || !password) {
       alert("Por favor ingresa email y contraseña");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://web-production-986ac.up.railway.app/api/usuarios/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Credenciales inválidas");
+      }
+
+      const usuario = await response.json();
+
+      // Guardar usuario en el contexto de autenticación
+      setUsuario(usuario);
+
+      // Redirigir al catálogo o página principal
+      navigate("/Catalog");
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
     }
   };
 

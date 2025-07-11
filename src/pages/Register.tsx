@@ -10,7 +10,7 @@ export const Register = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!nombre || !email || !password) {
@@ -18,24 +18,33 @@ export const Register = () => {
       return;
     }
 
-    // Obtener lista de usuarios del localStorage
-    const usuariosStr = localStorage.getItem("usuarios") || "[]";
-    const usuarios = JSON.parse(usuariosStr);
+    try {
+      const response = await fetch(
+        "https://web-production-986ac.up.railway.app/api/usuarios/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: nombre,
+            email: email,
+            password: password,
+            rol: "user", // o "admin" si deseas que el rol sea configurable
+          }),
+        }
+      );
 
-    // Verificar que el email no exista ya
-    if (usuarios.some((u: any) => u.email === email)) {
-      alert("Ya existe un usuario registrado con ese email");
-      return;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al registrar usuario");
+      }
+
+      alert("Registro exitoso, por favor inicia sesión");
+      navigate("/login");
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
     }
-
-    // Agregar nuevo usuario
-    usuarios.push({ nombre, email, password });
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-    alert("Registro exitoso, por favor inicia sesión");
-
-    // Redirigir a login
-    navigate("/login");
   };
 
   return (
