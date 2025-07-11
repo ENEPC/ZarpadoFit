@@ -1,4 +1,4 @@
-import { Sparkles, Image, Download, Share2, X, Check } from "lucide-react";
+import { Sparkles, Image, Download, Share2, X } from "lucide-react";
 import { Button } from "../components/Button";
 import React, { useState, useEffect, useRef } from "react";
 import { useVirtualTryOn } from "../context/VirtualTryOnContext";
@@ -387,7 +387,9 @@ export const VirtualTryOn = () => {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Sección de la foto del usuario */}
           <div className="bg-gray-800/50 backdrop-blur-xl p-2 md:p-6 rounded-2xl border border-gray-700/50">
-            <h3 className="text-xl font-semibold text-white mb-7 sm:mb-4 p-2 ">Tu Foto</h3>
+            <h3 className="text-xl font-semibold text-white mb-7 sm:mb-4 p-2 ">
+              Tu Foto
+            </h3>
             <div
               className={`aspect-[3/4] bg-gray-700/50 rounded-xl border-2 ${dragActive ? "border-purple-500" : "border-dashed border-gray-600"} flex items-center justify-center relative`}
               onDragEnter={handleUserDrag}
@@ -413,7 +415,9 @@ export const VirtualTryOn = () => {
                 <div className="text-center p-4">
                   <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-300">
-                    <span className="hidden md:inline">Arrastra tu foto aquí o</span>
+                    <span className="hidden md:inline">
+                      Arrastra tu foto aquí o
+                    </span>
                   </p>
                   <Button
                     variant="secondary"
@@ -519,7 +523,6 @@ export const VirtualTryOn = () => {
                 isLoading
               }
             >
-            
               {isLoading ? "Procesando..." : "Procesar con IA"}
             </Button>
           </div>
