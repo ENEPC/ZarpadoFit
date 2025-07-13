@@ -1,7 +1,6 @@
-// src/App.tsx (Versión Final Completa)
+import { Routes, Route } from "react-router-dom";
 
 import { Header } from "./components/Header";
-import { Routes, Route } from "react-router-dom";
 
 // Páginas
 import { Home } from "./pages/Home";
@@ -18,39 +17,28 @@ import { Recommendations } from "./pages/Recommendations";
 import Settings from "./pages/Settings";
 import Faq from "./pages/Faq";
 
-// Providers de Contexto
-import { FavoritesProvider } from './context/FavoritesContext';
-import { VirtualTryOnProvider } from "./context/VirtualTryOnContext";
-import { HistoryProvider } from "./context/HistoryContext";
-
+// --- CAMBIO PRINCIPAL: Se eliminan todos los wrappers de Contexto de aquí ---
 export const App = () => {
   return (
-    // Los Providers envuelven toda la aplicación
-    <FavoritesProvider>
-      <VirtualTryOnProvider>
-        <HistoryProvider>
-          <div className="min-h-screen bg-gray-900">
-            <Header />
-            <main> {/* Es una buena práctica envolver el contenido principal en <main> */}
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/upload-photo" element={<UploadPhoto />} />
-                <Route path="/virtual-try-on" element={<VirtualTryOn />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/favoritos" element={<Favoritos />} />
-                <Route path="/historial" element={<Historial />} />
-                <Route path="/catalog" element={<Catalogo />} />
-                <Route path="/recommendations" element={<Recommendations/>} />
-                <Route path="/prenda/:id" element={<DetallePrenda />} />          
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/faq" element={<Faq />} />
-              </Routes>
-            </main>
-          </div>
-        </HistoryProvider>
-      </VirtualTryOnProvider>
-    </FavoritesProvider>
+    <div className="min-h-screen bg-gray-900">
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/upload-photo" element={<UploadPhoto />} />
+          <Route path="/virtual-try-on" element={<VirtualTryOn />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/favoritos" element={<Favoritos />} />
+          <Route path="/historial" element={<Historial />} />
+          <Route path="/catalog" element={<Catalogo />} />
+          <Route path="/recommendations" element={<Recommendations/>} />
+          <Route path="/prenda/:id" element={<DetallePrenda />} />          
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/faq" element={<Faq />} />
+        </Routes>
+      </main>
+    </div>
   );
 };

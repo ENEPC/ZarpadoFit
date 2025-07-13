@@ -2,14 +2,16 @@ import { useState } from "react";
 import { LogIn } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
-import { useNavigate } from "react-router-dom";
+// --- CAMBIO 3 (MEJORA): Importamos Link para la navegación interna ---
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { setUsuario } = useAuth();
+  // --- CAMBIO 1: Obtenemos 'actualizarUsuario' en lugar de 'setUsuario' ---
+  const { actualizarUsuario } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,16 +27,19 @@ export const Login = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Credenciales inválidas");
+        // Asumiendo que la API puede devolver un mensaje de error en formato JSON
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Credenciales inválidas");
       }
 
       const usuario = await response.json();
 
-      // Guardar usuario en el contexto de autenticación
-      setUsuario(usuario);
+      // --- CAMBIO 2: Usamos la nueva función para guardar la sesión correctamente ---
+      // Esto actualiza el estado de React Y guarda en localStorage.
+      actualizarUsuario(usuario);
 
       // Redirigir al catálogo o página principal
-      navigate("/Catalog");
+      navigate("/catalog");
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     }
@@ -59,6 +64,7 @@ export const Login = () => {
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
             <Input
               label="Contraseña"
@@ -66,6 +72,7 @@ export const Login = () => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <Button
               type="submit"
@@ -76,15 +83,15 @@ export const Login = () => {
             </Button>
           </form>
 
-          {/* ... el resto igual ... */}
           <p className="mt-8 text-center text-gray-300">
             ¿No tienes cuenta?{" "}
-            <a
-              href="/Register"
-              className="text-purple-400 hover:text-purple-300 font-medium"
+            {/* --- CAMBIO 3 (CONTINUACIÓN): Usamos <Link> para no recargar la página --- */}
+            <Link
+              to="/register"
+              className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
             >
               Regístrate aquí
-            </a>
+            </Link>
           </p>
         </div>
       </div>
