@@ -1,6 +1,7 @@
 import {
   Home,
   User,
+  Upload,
   Camera,
   LogIn,
   UserPlus,
@@ -8,10 +9,12 @@ import {
   X,
   Sparkles,
   Settings,
+  Heart,
+  History,
   LayoutGrid, // 1. Importar el nuevo ícono para Catálogo
 } from "lucide-react";
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useBeforeUnload, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface NavLinkProps {
@@ -22,13 +25,7 @@ interface NavLinkProps {
   onClick?: () => void;
 }
 
-const NavLink = ({
-  icon: Icon,
-  label,
-  to,
-  isMobile = false,
-  onClick,
-}: NavLinkProps) => {
+const NavLink = ({ icon: Icon, label, to, isMobile = false, onClick}: NavLinkProps) => {
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -37,6 +34,8 @@ const NavLink = ({
   const activeClasses =
     "bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-purple-400 border border-purple-500/30";
   const inactiveClasses = "text-gray-300 hover:text-white hover:bg-gray-800/50";
+
+  
 
   return (
     <Link
@@ -80,7 +79,9 @@ export const Header = () => {
               <NavLink icon={LayoutGrid} label="Catálogo" to="/catalog" />{" "}
               {/* 2. AÑADIR ENLACE ESCRITORIO */}
               <NavLink icon={Camera} label="Probador" to="/virtual-try-on" />
-              {usuario ? (
+              
+              
+              {usuario  ? (
                 <>
                   <NavLink icon={User} label="Perfil" to="/profile" />
                   <NavLink icon={Settings} label="Ajustes" to="/settings" />
@@ -91,83 +92,44 @@ export const Header = () => {
                   <NavLink icon={UserPlus} label="Registrarse" to="/register" />
                 </>
               )}
-              {/* Mobile menu button */}
-              <div className="md:hidden">
-                <button
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="text-gray-300 hover:text-white p-2"
-                >
-                  {isMobileMenuOpen ? <X /> : <Menu />}
-                </button>
-              </div>
+            </div>
+            
+          {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white p-2"
+              >
+                {isMobileMenuOpen ? <X /> : <Menu />}
+              </button>
+            </div>
+        </div>
+      </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-gray-800">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <NavLink icon={Home} label="Inicio" to="/" isMobile onClick={closeMobileMenu}/>
+              <NavLink icon={LayoutGrid} label="Catálogo" to="/catalog" isMobile onClick={closeMobileMenu}/>{" "}
+              {/* 2. AÑADIR ENLACE ESCRITORIO */}
+              <NavLink icon={Camera} label="Probador" to="/virtual-try-on" isMobile onClick={closeMobileMenu}/>
+              
+              
+              {usuario  ? (
+                <>
+                  <NavLink icon={User} label="Perfil" to="/profile" isMobile onClick={closeMobileMenu}/>
+                  <NavLink icon={Settings} label="Ajustes" to="/settings" isMobile onClick={closeMobileMenu}/>
+                </>
+              ) : (
+                <>
+                  <NavLink icon={LogIn} label="Iniciar Sesión" to="/login" isMobile onClick={closeMobileMenu}/>
+                  <NavLink icon={UserPlus} label="Registrarse" to="/register" isMobile onClick={closeMobileMenu}/>
+                </>
+              )}
             </div>
           </div>
-
-          {/* Mobile Navigation */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-gray-800">
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                <NavLink
-                  icon={Home}
-                  label="Inicio"
-                  to="/"
-                  isMobile
-                  onClick={closeMobileMenu}
-                />
-                <NavLink
-                  icon={LayoutGrid}
-                  label="Catálogo"
-                  to="/catalog"
-                  isMobile
-                  onClick={closeMobileMenu}
-                />{" "}
-                {/* 2. AÑADIR ENLACE ESCRITORIO */}
-                <NavLink
-                  icon={Camera}
-                  label="Probador"
-                  to="/virtual-try-on"
-                  isMobile
-                  onClick={closeMobileMenu}
-                />
-                {usuario ? (
-                  <>
-                    <NavLink
-                      icon={User}
-                      label="Perfil"
-                      to="/profile"
-                      isMobile
-                      onClick={closeMobileMenu}
-                    />
-                    <NavLink
-                      icon={Settings}
-                      label="Ajustes"
-                      to="/settings"
-                      isMobile
-                      onClick={closeMobileMenu}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <NavLink
-                      icon={LogIn}
-                      label="Iniciar Sesión"
-                      to="/login"
-                      isMobile
-                      onClick={closeMobileMenu}
-                    />
-                    <NavLink
-                      icon={UserPlus}
-                      label="Registrarse"
-                      to="/register"
-                      isMobile
-                      onClick={closeMobileMenu}
-                    />
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </nav>
     </>
   );
