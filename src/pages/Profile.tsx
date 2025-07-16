@@ -1,24 +1,15 @@
-import { User, History, Image, LogOut, MessageCircleQuestion, Heart } from "lucide-react";
+import {
+  User,
+  History,
+  Image,
+  LogOut,
+  MessageCircleQuestion,
+  Heart,
+} from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import MiniCarta from "../components/MiniCard";
 import { useAuth } from "../context/AuthContext";
 import { useHistory } from "../context/HistoryContext";
-
-//TODO conectar con la API para obtener el historial real
-const fullHistoryItems = [
-  { id: 1, title: 'Camisa de Lino Blanca', date: 'Ayer', image: "camisa" },
-  { id: 2, title: 'Pantalón Cargo Negro', date: 'Hace 3 días', image: "" },
-  { id: 3, title: 'Sudadera con Capucha Gris', date: 'Hace 3 días', image: "" },
-  { id: 4, title: 'Zapatillas Urbanas Blancas', date: 'Hace 5 días', image: "" },
-  { id: 5, title: 'Chaqueta de Jean Azul', date: 'La semana pasada', image: "" },
-  { id: 6, title: 'Vestido de Verano Floral', date: 'La semana pasada', image: "" },
-  { id: 7, title: 'Gorra de Béisbol Negra', date: 'Hace 2 semanas', image: "" },
-  { id: 8, title: 'Gafas de Sol Aviador', date: 'Hace 2 semanas', image: "" },
-  { id: 9, title: 'Botas de Cuero Marrón', date: 'Hace 3 semanas', image: "" },
-  { id: 10, title: 'Camiseta Gráfica Vintage', date: 'Hace 1 mes', image: "" },
-  { id: 11, title: 'Shorts Deportivos Grises', date: 'Hace 1 mes', image: "" },
-  { id: 12, title: 'Mochila de Lona Negra', date: 'Hace 1 mes', image: "" },
-];
 
 export const Profile = () => {
   const navigate = useNavigate();
@@ -38,7 +29,6 @@ export const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        
         <div className="bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50 mb-8 md:mb-4">
           <div className="flex items-center space-x-6 mb-8">
             <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center">
@@ -57,8 +47,13 @@ export const Profile = () => {
               <span>Historial Reciente</span>
             </h3>
             <div className="space-y-3">
-              {historyItems.slice(0,3).map((item) => (
-                <MiniCarta key={item.id} id={item.id} nombre={item.nombre} imagen={item.img}/>
+              {historyItems.slice(0, 3).map((item) => (
+                <MiniCarta
+                  key={item.id}
+                  id={item.id}
+                  nombre={item.nombre}
+                  imagen={item.img}
+                />
               ))}
               <NavLink to="/historial">
                 <div className="w-full text-center mt-4">
@@ -79,7 +74,7 @@ export const Profile = () => {
                 </h3>
               </div>
             </NavLink>
-            
+
             <NavLink to="/fotos-subidas">
               <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
                 <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
@@ -132,4 +127,3 @@ export const Profile = () => {
     </div>
   );
 };
-
