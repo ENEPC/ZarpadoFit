@@ -6,11 +6,10 @@ const imagenes = import.meta.glob('../img/*.{png,jpg,jpeg}', { eager: true, impo
 interface MiniCartaProps {
     id: number;
     nombre: string;
-    fecha: string;
     imagen: string;
 }
 
-const MiniCard: React.FC<MiniCartaProps> = ({id, imagen, nombre, fecha}) => {
+const MiniCard: React.FC<MiniCartaProps> = ({id, imagen, nombre}) => {
     const ruta = Object.entries(imagenes).find(([path]) =>
         path.includes(`/img/${imagen}.`)
     )?.[1];
@@ -21,12 +20,11 @@ const MiniCard: React.FC<MiniCartaProps> = ({id, imagen, nombre, fecha}) => {
                 {imagen === "" ? (
                     <ImageIcon className="h-12 w-12 text-slate-500 group-hover:text-purple-400 transition-colors select-none" />
                 ) : (
-                    <img src={ruta} alt={`Imagen de ${nombre}`} className="h-full w-auto object-cover rounded select-none" />
+                    <img src={imagen} alt={`Imagen de ${nombre}`} className="h-full w-auto object-cover rounded select-none" />
                 )}
                 {/* He reordenado un poco para que el nombre y la fecha estén juntos, es más semántico */}
                 <div className="flex-grow text-left">
                     <span className="text-white select-none block">{nombre}</span>
-                    <span className="text-gray-400 text-sm select-none block">{fecha}</span>
                 </div>
             </div>
         </Link>

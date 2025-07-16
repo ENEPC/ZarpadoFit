@@ -22,13 +22,7 @@ const Settings = () => {
       <div className='md:mx-20 lg:mx-60'>
         {/* HEADER */}
         <div className="flex items-center space-x-4 mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-white hover:text-purple-400 transition"
-            aria-label="Volver al catálogo"
-          >
-            <ArrowLeftCircle className="h-7 w-7" />
-          </button>
+          
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
             Ajustes
           </h1>

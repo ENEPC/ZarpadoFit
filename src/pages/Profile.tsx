@@ -2,6 +2,7 @@ import { User, History, Image, LogOut, MessageCircleQuestion, Heart } from "luci
 import { NavLink, useNavigate } from "react-router-dom";
 import MiniCarta from "../components/MiniCard";
 import { useAuth } from "../context/AuthContext";
+import { useHistory } from "../context/HistoryContext";
 
 //TODO conectar con la API para obtener el historial real
 const fullHistoryItems = [
@@ -31,6 +32,8 @@ export const Profile = () => {
     actualizarUsuario(null);
     navigate("/catalog");
   };
+  //Se recupera el historial;
+  const { historyItems } = useHistory();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 py-12 px-4">
@@ -54,8 +57,8 @@ export const Profile = () => {
               <span>Historial Reciente</span>
             </h3>
             <div className="space-y-3">
-              {fullHistoryItems.slice(0,3).map((item) => (
-                <MiniCarta key={item.id} id={item.id} nombre={item.title} fecha={item.date} imagen={item.image}/>
+              {historyItems.slice(0,3).map((item) => (
+                <MiniCarta key={item.id} id={item.id} nombre={item.nombre} imagen={item.img}/>
               ))}
               <NavLink to="/historial">
                 <div className="w-full text-center mt-4">
