@@ -10,6 +10,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import MiniCarta from "../components/MiniCard";
 import { useAuth } from "../context/AuthContext";
 import { useHistory } from "../context/HistoryContext";
+import { ProfileActions } from "../components/ProfileActions";
 
 export const Profile = () => {
   const navigate = useNavigate();
@@ -40,88 +41,87 @@ export const Profile = () => {
             </div>
           </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-gray-700/30 rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none cursor-default">
-              <History className="h-5 w-5" />
-              <span>Historial Reciente</span>
-            </h3>
-            <div className="space-y-3">
-              {historyItems.slice(0, 3).map((item) => (
-                <MiniCarta
-                  key={item.id}
-                  id={item.id}
-                  nombre={item.nombre}
-                  imagen={item.img}
-                />
-              ))}
-              <NavLink to="/historial">
-                <div className="w-full text-center mt-4">
-                  <h3 className="text-sm font-semibold text-white select-none">
-                    Ver más
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-gray-700/30 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none cursor-default">
+                <History className="h-5 w-5" />
+                <span>Historial Reciente</span>
+              </h3>
+              <div className="space-y-3">
+                {historyItems.slice(0, 3).map((item) => (
+                  <MiniCarta
+                    key={item.id}
+                    id={item.id}
+                    nombre={item.nombre}
+                    imagen={item.img}
+                  />
+                ))}
+                <NavLink to="/historial">
+                  <div className="w-full text-center mt-4">
+                    <h3 className="text-sm font-semibold text-white select-none">
+                      Ver más
+                    </h3>
+                  </div>
+                </NavLink>
+              </div>
+            </div>
+
+            <div>
+              <NavLink to="/favoritos">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
+                    <Heart className="h-5 w-5" />
+                    <span>Favoritos</span>
                   </h3>
                 </div>
               </NavLink>
+
+              <NavLink to="/fotos-subidas">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
+                    <Image className="h-5 w-5" />
+                    <span>Fotos subidas</span>
+                  </h3>
+                </div>
+              </NavLink>
+
+              <NavLink to="/faq">
+                <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
+                    <MessageCircleQuestion className="h-5 w-5" />
+                    <span>Preguntas frecuentes</span>
+                  </h3>
+                </div>
+              </NavLink>
+
+              <button
+                onClick={handleLogout}
+                className="w-full text-left bg-gray-800/50 p-4 rounded-lg hover:bg-red-600 transition mt-4"
+              >
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
+                  <LogOut className="h-5 w-5" />
+                  <span>Cerrar sesión</span>
+                </h3>
+              </button>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold">Mi Perfil</h1>
+              <p className="text-gray-400 text-lg">
+                Gestiona tu información personal
+              </p>
             </div>
           </div>
 
-          <div>
-            <NavLink to="/favoritos">
-              <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
-                  <Heart className="h-5 w-5" />
-                  <span>Favoritos</span>
-                </h3>
-              </div>
-            </NavLink>
+          <div className="flex flex-col lg:flex-row gap-8">
+            <main className="flex-1">
+              <History />
+            </main>
 
-            <NavLink to="/fotos-subidas">
-              <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
-                  <Image className="h-5 w-5" />
-                  <span>Fotos subidas</span>
-                </h3>
-              </div>
-            </NavLink>
-
-            <NavLink to="/faq">
-              <div className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-700 transition">
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
-                  <MessageCircleQuestion className="h-5 w-5" />
-                  <span>Preguntas frecuentes</span>
-                </h3>
-              </div>
-            </NavLink>
-
-            <button
-              onClick={handleLogout}
-              className="w-full text-left bg-gray-800/50 p-4 rounded-lg hover:bg-red-600 transition mt-4"
-            >
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2 select-none">
-                <LogOut className="h-5 w-5" />
-                <span>Cerrar sesión</span>
-              </h3>
-            </button>
+            <aside className="w-full lg:w-auto">
+              <ProfileActions />
+            </aside>
           </div>
-          <div>
-            <h1 className="text-4xl font-bold">Mi Perfil</h1>
-            <p className="text-gray-400 text-lg">Gestiona tu información personal</p>
-          </div>
-        </div>
-
-       
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          
-          <main className="flex-1">
-            <History />
-          </main>
-          
-          
-          <aside className="w-full lg:w-auto">
-            <ProfileActions />
-          </aside>
-
+        {/* --- ÚNICO CAMBIO: Aquí está la etiqueta de cierre que faltaba --- */}
         </div>
       </div>
     </div>
