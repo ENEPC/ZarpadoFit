@@ -9,7 +9,7 @@ const FIXED_USER_ID = "68587b9335f4a7ed6ef6a216";
 const API_ENDPOINT = "https://web-production-986ac.up.railway.app/api/probador";
 
 export const VirtualTryOn = () => {
-  // Estados para las imágenes
+  // Estados para las imágenes a ingresar
   const [userImage, setUserImage] = useState<string | null>(null);
   const [clothingImages, setClothingImages] = useState<(string | null)[]>(
     Array(1).fill(null)
