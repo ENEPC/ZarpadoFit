@@ -7,7 +7,7 @@ import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { UploadPhoto } from "./pages/UploadPhoto";
-import { VirtualTryOn } from "./pages/VirtualTryOn";
+import VirtualTryOn from "./pages/VirtualTryOn";
 import { Profile } from "./pages/Profile";
 import { Favoritos } from "./pages/Favoritos";
 import { Historial } from "./pages/Historial";
