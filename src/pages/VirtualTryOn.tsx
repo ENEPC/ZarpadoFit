@@ -1,607 +1,470 @@
-import { Sparkles, Image, Download, Share2, X } from "lucide-react";
-import { Button } from "../components/Button";
-import React, { useState, useEffect, useRef } from "react";
-import { useVirtualTryOn } from "../context/VirtualTryOnContext";
-import { useHistory } from "../context/HistoryContext";
-import { prendasCatalogo } from "../data/prendas";
+import React, { useRef, useState, useEffect } from "react";
+import { GoogleGenAI, Modality } from "@google/genai";
+import { Sparkles, Image as ImageIcon, Download, Share2, X } from "lucide-react";
 
-const FIXED_USER_ID = "68587b9335f4a7ed6ef6a216";
-const API_ENDPOINT = "https://web-production-986ac.up.railway.app/api/probador";
+// ==============================================
+// Utilidades binarias / imágenes
+// ==============================================
+const abToB64 = (ab:ArrayBuffer) => {
+  let binary = "";
+  const bytes = new Uint8Array(ab);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+};
 
-export const VirtualTryOn = () => {
-  // Estados para las imágenes a ingresar
-  const [userImage, setUserImage] = useState<string | null>(null);
-  const [clothingImages, setClothingImages] = useState<(string | null)[]>(
-    Array(1).fill(null)
-  );
-  const [response, setResponse] = useState<string | null>(null);
-
-  // Estados para UI y control
-  const [generateEvent, setGenerateEvent] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
-  const [dragActiveClothing, setDragActiveClothing] = useState<number | null>(
-    null
-  );
-
-  // Refs para los inputs de archivo
-  const userFileInputRef = useRef<HTMLInputElement>(null);
-  const clothingFileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Contextos
-  const { prendaParaProbar, setPrendaParaProbar } = useVirtualTryOn();
-  const { addToHistory } = useHistory();
-
-  // Efecto para manejar prendas del catálogo
-  useEffect(() => {
-    if (prendaParaProbar) {
-      const firstEmptyIndex = clothingImages.findIndex((img) => img === null);
-      const targetIndex = firstEmptyIndex === -1 ? 0 : firstEmptyIndex;
-      const newImages = [...clothingImages];
-      newImages[targetIndex] = prendaParaProbar.img;
-      setClothingImages(newImages);
-      setPrendaParaProbar(null);
+const b64ToBlob = (b64: any, mime: string = "image/png") => {
+  try {
+    if (typeof b64 === "string") {
+      return new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))], { type: mime });
     }
-  }, [prendaParaProbar, clothingImages, setPrendaParaProbar]);
+    // If SDK ever returns bytes instead of base64 string
+    if (b64 instanceof Uint8Array || Array.isArray(b64)) {
+      return new Blob([b64 instanceof Uint8Array ? b64 : Uint8Array.from(b64 as any)] as any, { type: mime });
+    }
+    // If it's already an ArrayBuffer
+    if (b64?.buffer) return new Blob([b64.buffer], { type: mime });
+  } catch (e) {
+    console.warn("b64ToBlob failed, falling back to data URL path", e);
+  }
+  // Last resort: return an empty blob to avoid crashes
+  return new Blob([], { type: mime });
+};
 
-  // Función mejorada para convertir cualquier imagen a Blob
-  const convertImageToBlob = async (imageData: string): Promise<Blob> => {
+const srcToBlob = async (src: string | Blob) => {
+  // URL remota
+  if (typeof src === "string" && /^https?:\/\//i.test(src)) {
+    const resp = await fetch(src, { mode: "cors", credentials: "omit" });
+    if (!resp.ok) throw new Error(`No se pudo descargar la imagen: ${resp.status}`);
+    const blob = await resp.blob();
+    if (!blob.type?.startsWith("image/")) throw new Error("El recurso no es una imagen válida");
+    return blob;
+  }
+  // Data URL
+  if (typeof src === "string" && src.startsWith("data:image")) {
+    const m = src.match(/^data:(image\/[^;]+);base64,(.+)$/);
+    if (!m) throw new Error("Data URL inválida");
+    return b64ToBlob(m[2], m[1]);
+  }
+  // File/Blob ya listo
+  if (src instanceof Blob) return src;
+  throw new Error("Formato de imagen no reconocido");
+};
+
+const makeInlinePartFromSrc = async (src: string | Blob) => {
+  const blob = await srcToBlob(src);
+  const ab = await blob.arrayBuffer();
+  return {
+    inlineData: {
+      mimeType: blob.type || "image/jpeg",
+      data: abToB64(ab),
+    },
+  };
+};
+
+const buildPrompt = (g:string) => {
+  const garment = !g?.trim() ? "garment" : g.trim();
+  return `
+I. Garment Extraction and Preservation (IMAGE_1)
+Precisely isolate the ${garment} in IMAGE_1, excluding all other elements (background, subject’s body, face).
+Maintain the exact color, texture, silhouette, dimensions, patterns (logos/prints), seams and construction details of the ${garment}. Include pockets, buttons, zippers, drawcords, etc.
+Use only garment pixels/features from IMAGE_1; do not synthesize new artwork or branding.
+
+II. Integration into IMAGE_2
+Completely replace the existing garment in IMAGE_2 with the extracted ${garment}. Do not combine or blend any elements of the original garment in IMAGE_2.
+Match scale, perspective and orientation of the extracted ${garment} to the subject’s pose in IMAGE_2 so it drapes naturally (gravity, folds, volume).
+Adapt lighting, shadows and reflections on the inserted ${garment} to the light of IMAGE_2, including realistic contact shadows.
+
+III. IMAGE_2 Preservation (Non-Negotiable)
+The subject's face in IMAGE_2 must remain 100% identical to the original.
+Hair, accessories, other clothing and the entire background of IMAGE_2 must remain unchanged.
+Edits are strictly limited to the replaced ${garment} region; no spillover or unintended changes.
+
+Negative Constraints
+Do not fuse any features of the original IMAGE_2 garment with the ${garment} from IMAGE_1.
+Do not alter the subject’s face, hair, expression, accessories, or background.
+Do not add shadows/reflections/effects beyond those caused by the inserted ${garment} and its interaction with existing lighting.
+Avoid blending or warping that compromises the natural appearance and volume of the inserted ${garment}.
+
+Expected Output
+Return IMAGE_2 with the new ${garment} integrated realistically and naturally, keeping face and background unchanged—authentic and professional, as if the ${garment} had always been in the original image.
+`.trim();
+};
+
+// ==============================================
+// Helper: obtiene API key sin tocar `import`/`import.meta`
+// ==============================================
+const getInitialApiKey = () => {
+  // 1) Next/webpack (reemplazo en build)
+  try {
+    if (typeof process !== "undefined" && process.env) {
+      const fromProcess =
+        process.env.VITE_GEMINI_API_KEY ||
+        process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+        process.env.GEMINI_API_KEY ||
+        "";
+      if (fromProcess) return fromProcess;
+    }
+  } catch {}
+  // 2) LocalStorage (persistencia en el navegador)
+  try {
+    if (typeof window !== "undefined") {
+      const fromLS = window.localStorage.getItem("GEMINI_API_KEY") || "";
+      if (fromLS) return fromLS;
+    }
+  } catch {}
+  return "";
+};
+
+export default function Virtual() {
+  const [apiKey, setApiKey] = useState(getInitialApiKey());
+  const [userImage, setUserImage] = useState<string | null>(null);
+  const [garmentImage, setGarmentImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+ const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [modelText, setModelText] = useState("");
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const userInputRef = useRef<HTMLInputElement>(null);
+  const garmentInputRef = useRef<HTMLInputElement>(null);
+
+  // Persistir la API key en localStorage (solo pruebas)
+  useEffect(() => {
     try {
-      // Si es una URL (http o https)
-      if (imageData.startsWith("http")) {
-        // Primero intentamos sin proxy CORS
-        try {
-          const response = await fetch(imageData, {
-            mode: "cors",
-            credentials: "omit",
-          });
+      if (apiKey) window.localStorage.setItem("GEMINI_API_KEY", apiKey);
+    } catch {}
+  }, [apiKey]);
 
-          if (response.ok) {
-            const blob = await response.blob();
-            if (blob.type.startsWith("image/")) {
-              return blob;
-            }
-          }
-        } catch (error) {
-          console.log("Intento directo fallido, usando proxy CORS...");
-        }
+  // Mostrar modal si no hay key al cargar
+  useEffect(() => {
+    if (!apiKey) setShowKeyModal(true);
+  }, []);
 
-        // Si falla, intentamos con proxy CORS
-        try {
-          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageData)}`;
-          const response = await fetch(proxyUrl);
+  const onPickUser = () => userInputRef.current?.click();
+  const onPickGarment = () => garmentInputRef.current?.click();
 
-          if (!response.ok) {
-            throw new Error(`Error al cargar imagen: ${response.status}`);
-          }
-
-          const blob = await response.blob();
-
-          if (!blob.type.startsWith("image/")) {
-            throw new Error("El archivo no es una imagen válida");
-          }
-
-          return blob;
-        } catch (proxyError) {
-          console.error("Error con proxy CORS:", proxyError);
-          throw new Error(
-            "No se pudo cargar la imagen desde el servidor remoto"
-          );
-        }
-      }
-      // Si es base64
-      else if (imageData.startsWith("data:image")) {
-        const matches = imageData.match(/^data:(image\/\w+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-          throw new Error("Formato base64 de imagen no válido");
-        }
-
-        const mimeType = matches[1];
-        const base64Data = matches[2];
-
-        // Convertimos base64 a ArrayBuffer
-        const byteString = atob(base64Data);
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-
-        return new Blob([ab], { type: mimeType });
-      }
-      throw new Error("Formato de imagen no reconocido");
-    } catch (error) {
-      console.error("Error al convertir imagen:", error);
-      throw new Error(
-        "No se pudo procesar la imagen. Asegúrate de usar imágenes JPG o PNG válidas."
-      );
+  const onFileToDataUrl = (file: File | undefined, setter: (url: string | null) => void) => {
+  if (!file || !file.type?.startsWith("image/")) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const result = ev.target?.result;
+    if (typeof result === "string") {
+      setter(result);
+    } else {
+      setter(null); // O manejar el error como prefieras
     }
   };
+  reader.readAsDataURL(file);
+};
 
-  // Función principal para enviar imágenes al endpoint
-  const handleGenerate = async () => {
+  const tryOnInBrowser = async () => {
+    if (!apiKey?.trim()) {
+      setShowKeyModal(true);
+      setError(null);
+      return;
+    }
     if (!userImage) {
-      setError("Por favor, selecciona una foto de usuario");
+      setError("Subí tu foto (IMAGE_2)");
+      return;
+    }
+    if (!garmentImage) {
+      setError("Subí la prenda (IMAGE_1)");
       return;
     }
 
-    const clothingImageUrl = clothingImages.find((img) => img !== null);
-
-    if (!clothingImageUrl) {
-      setError("Por favor, subí al menos una prenda para probar");
-      return;
-    }
-
-    if (!clothingImageUrl) {
-      setError("No se ha seleccionado ninguna prenda");
-      return;
-    }
-
-    setGenerateEvent(true);
-    setResponse(null);
     setIsLoading(true);
     setError(null);
+    setPreviewUrl(null);
+    setModelText("");
 
     try {
-      // Crear FormData como espera la API
-      const formData = new FormData();
-      formData.append("user_id", FIXED_USER_ID);
+      const ai = new GoogleGenAI({ apiKey });
 
-      // Convertir imágenes a Blob con manejo de errores mejorado
-      let prendaBlob: Blob;
-      let usuarioBlob: Blob;
+      // 1) Describir prenda
+      const prendaPart = await makeInlinePartFromSrc(garmentImage);
+      const descResp = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            text:
+              "ONLY RETURN THE GARMENT TYPE AND KEY FEATURES, IN ENGLISH. Example: 'Anorak: Lightweight nylon, short zipper, hood with drawcord, color-block on shoulders and sleeves. Logo ...'.",
+          },
+          prendaPart,
+        ],
+      });
+      const garmentDesc = (descResp.text ?? "").trim() || "garment";
 
-      try {
-        prendaBlob = await convertImageToBlob(clothingImageUrl);
-      } catch (error) {
-        console.error("Error al procesar imagen de prenda:", error);
-        throw new Error(
-          "No se pudo procesar la imagen de la prenda. Asegúrate de que sea una imagen JPG o PNG válida y que esté accesible."
-        );
-      }
+      // 2) Prompt
+      const prompt = buildPrompt(garmentDesc);
 
-      try {
-        usuarioBlob = await convertImageToBlob(userImage);
-      } catch (error) {
-        console.error("Error al procesar imagen de usuario:", error);
-        throw new Error(
-          "No se pudo procesar tu foto. Asegúrate de que sea una imagen JPG o PNG válida."
-        );
-      }
-
-      formData.append("file_prenda", prendaBlob, `prenda-${Date.now()}.jpg`);
-      formData.append("file_usuario", usuarioBlob, `usuario-${Date.now()}.jpg`);
-
-      // Configuración de la solicitud con timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-      const response = await fetch(API_ENDPOINT, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json",
-        },
-        signal: controller.signal,
+      // 3) Edición con 2 imágenes
+      const usuarioPart = await makeInlinePartFromSrc(userImage);
+      const editResp = await ai.models.generateContent({
+        model: "gemini-2.0-flash-preview-image-generation",
+        contents: [
+          { text: "IMAGE_1 (garment reference):" },
+          prendaPart,
+          { text: "IMAGE_2 (base/final target):" },
+          usuarioPart,
+          { text: prompt },
+        ],
+        config: { responseModalities: [Modality.TEXT, Modality.IMAGE] },
       });
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status}`);
+      // === Robust extractor ===
+      const urls = [];
+      const parts = editResp?.candidates?.[0]?.content?.parts ?? [];
+      console.debug("parts count:", parts.length, parts);
+      for (const p of parts) {
+        if (p?.inlineData?.data) {
+          const mime = p.inlineData.mimeType || "image/png";
+          const data = p.inlineData.data;
+          // Prefer object URL
+          const blob = b64ToBlob(data, mime);
+          if (blob.size > 0) {
+            urls.push(URL.createObjectURL(blob));
+          } else if (typeof data === "string") {
+            // Fallback to data URL for environments that dislike blob URLs
+            urls.push(`data:${mime};base64,${data}`);
+          }
+        }
+        // Future compatibility: if SDK returns media[] or fileData
+        if ((p as any)?.media && Array.isArray((p as any).media)) {
+          for (const m of p as any) {
+            if (m?.inlineData?.data) {
+              const mime = m.inlineData.mimeType || "image/png";
+              const blob = b64ToBlob(m.inlineData.data, mime);
+              if (blob.size > 0) urls.push(URL.createObjectURL(blob));
+            }
+          }
+        }
       }
 
-      const result = await response.json();
-
-      // Manejar la respuesta
-      if (result.img_generada) {
-        setResponse(result.img_generada);
-      } else if (result.processedImage) {
-        setResponse(`data:image/jpeg;base64,${result.processedImage}`);
-      } else {
-        throw new Error("El servidor no devolvió una imagen válida");
+      if (urls.length === 0) {
+        // Try top-level media if present
+        const topMedia = (editResp as any)?.media || [];
+        if (Array.isArray(topMedia)) {
+          for (const m of topMedia) {
+            if (m?.inlineData?.data) {
+              const mime = m.inlineData.mimeType || "image/png";
+              const blob = b64ToBlob(m.inlineData.data, mime);
+              if (blob.size > 0) urls.push(URL.createObjectURL(blob));
+            }
+          }
+        }
       }
 
-      // Agregar al historial si es una prenda del catálogo
-      const prendaParaHistorial = prendasCatalogo.find(
-        (p) => p.img === clothingImageUrl
-      );
-      if (prendaParaHistorial) {
-        addToHistory(prendaParaHistorial);
+      if (urls.length === 0) throw new Error("El modelo no devolvió imágenes.");
+
+      setPreviewUrl(urls[0]);
+      const maybeText = (editResp.text ?? "").trim();
+      if (maybeText) setModelText(maybeText);
+    }catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      }else {
+      setError(String(e));
       }
-    } catch (error) {
-      console.error("Error al procesar:", error);
-      setError((error as Error).message || "Error al conectar con el servidor");
-    } finally {
+    }finally {
       setIsLoading(false);
     }
   };
 
-  // Configuración de eventos de drag and drop
+  // ==============================================
+  // "Tests" de utilidades (auto-check en dev)
+  // Ejecuta si la URL tiene ?selftest=1
+  // ==============================================
   useEffect(() => {
-    const preventDefaults = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
+    const runSelfTests = async () => {
+      const assert = (cond: any, msg: string) => { if (!cond) throw new Error(msg); };
+      // Test 1: round-trip base64
+      const txt = "hola";
+      const enc = new TextEncoder().encode(txt);
+      const b64 = abToB64(enc.buffer);
+      const back = new Uint8Array(atob(b64).split("").map((c) => c.charCodeAt(0)));
+      assert(new TextDecoder().decode(back) === txt, "abToB64 round-trip falla");
+      // Test 2: dataURL -> blob
+      const dataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHgwKk6ZQJ4wAAAABJRU5ErkJggg==";
+      const blob = await srcToBlob(dataUrl);
+      assert(blob instanceof Blob && blob.size > 0, "srcToBlob(dataURL) falla");
+      // Test 3: buildPrompt fallback
+      const ptxt = buildPrompt("");
+      assert(/IMAGE_1/.test(ptxt) && ptxt.includes("garment"), "buildPrompt fallback falla");
     };
-
-    const events = ["dragenter", "dragover", "dragleave", "drop"];
-    events.forEach((event) => {
-      document.addEventListener(event, preventDefaults, false);
-    });
-
-    return () => {
-      events.forEach((event) => {
-        document.removeEventListener(event, preventDefaults, false);
-      });
-    };
+    try {
+      const q = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      if (q && q.get("selftest") === "1") runSelfTests().catch((e) => console.warn("Selftests: ", e.message));
+    } catch {}
   }, []);
 
-  // Manejadores para la imagen del usuario
-  const handleUserFileSelect = () => userFileInputRef.current?.click();
-
-  const handleUserFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file?.type.match("image.*")) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64String = event.target?.result as string;
-        setUserImage(base64String);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUserDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file?.type.match("image.*")) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64String = event.target?.result as string;
-        setUserImage(base64String);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUserDrag = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(e.type === "dragenter" || e.type === "dragover");
-  };
-
-  const removeUserImage = () => {
-    setUserImage(null);
-    if (userFileInputRef.current) userFileInputRef.current.value = "";
-  };
-
-  // Manejadores para las prendas
-  const handleClothingFileSelect = (index: number) => {
-    clothingFileInputRefs.current[index]?.click();
-  };
-
-  const handleClothingFileChange = (
-    index: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (file?.type.match("image.*")) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64String = event.target?.result as string;
-        const newImages = [...clothingImages];
-        newImages[index] = base64String;
-        setClothingImages(newImages);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleClothingDrop = (
-    index: number,
-    e: React.DragEvent<HTMLDivElement>
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActiveClothing(null);
-    const file = e.dataTransfer.files?.[0];
-    if (file?.type.match("image.*")) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const newImages = [...clothingImages];
-        newImages[index] = event.target?.result as string;
-        setClothingImages(newImages);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleClothingDrag = (
-    index: number,
-    e: React.DragEvent<HTMLDivElement>
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActiveClothing(
-      e.type === "dragenter" || e.type === "dragover" ? index : null
-    );
-  };
-
-  const removeClothingImage = (index: number) => {
-    const newImages = [...clothingImages];
-    newImages[index] = null;
-    setClothingImages(newImages);
-    if (clothingFileInputRefs.current[index]) {
-      clothingFileInputRefs.current[index]!.value = "";
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">ZARPADO FIT</h1>
-          <h2 className="text-2xl font-semibold text-white mb-2">
-            Probador Virtual
-          </h2>
-          <p className="text-xl text-gray-300">
-            Selecciona la prenda que quieres probar
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 py-10 px-4">
+      <div className="max-w-6xl mx-auto">
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white">ZARPADO FIT</h1>
+          <p className="text-gray-300 mt-2">Probador virtual (frontend-only, para pruebas)</p>
+        </header>
 
-        {/* Overlay de carga */}
-        {isLoading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 p-6 rounded-xl text-center">
-              <Sparkles className="h-16 w-16 text-purple-500 mx-auto mb-4 animate-pulse" />
-              <p className="text-white text-xl">Procesando con IA...</p>
-              <p className="text-gray-300 text-sm mt-2">
-                Esto puede tomar unos segundos
-              </p>
-            </div>
-          </div>
-        )}
+        
 
-        {/* Mensaje de error */}
-        {error && (
-          <div className="fixed bottom-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg max-w-md z-50">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-bold">Error</h4>
-                <p>{error}</p>
-              </div>
-              <button
-                onClick={() => setError(null)}
-                className="text-white hover:text-gray-200 ml-4"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Sección de la foto del usuario */}
-          <div className="bg-gray-800/50 backdrop-blur-xl p-2 md:p-6 rounded-2xl border border-gray-700/50">
-            <h3 className="text-xl font-semibold text-white mb-7 sm:mb-4 p-2 ">
-              Tu Foto
-            </h3>
-            <div
-              className={`aspect-[3/4] bg-gray-700/50 rounded-xl border-2 ${dragActive ? "border-purple-500" : "border-dashed border-gray-600"} flex items-center justify-center relative`}
-              onDragEnter={handleUserDrag}
-              onDragLeave={handleUserDrag}
-              onDragOver={handleUserDrag}
-              onDrop={handleUserDrop}
-            >
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* Foto usuario */}
+          <section className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-4">
+            <h3 className="text-white font-semibold mb-3">Tu Foto (IMAGE_2)</h3>
+            <div className="aspect-[3/4] bg-gray-900/50 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center relative">
               {userImage ? (
                 <div className="w-full h-full relative">
-                  <img
-                    src={userImage}
-                    alt="Tu foto"
-                    className="w-full h-full object-cover rounded-xl"
-                  />
+                  <img src={userImage} alt="user" crossOrigin="anonymous" className="w-full h-full object-contain rounded-xl" />
                   <button
-                    onClick={removeUserImage}
-                    className="absolute top-2 right-2 bg-gray-800/80 hover:bg-gray-700/90 rounded-full p-2 transition-colors duration-200"
+                    onClick={() => setUserImage(null)}
+                    className="absolute top-2 right-2 bg-gray-800/80 hover:bg-gray-700/90 rounded-full p-2"
+                    title="Quitar"
                   >
-                    <X className="h-5 w-5 text-white" />
+                    <X className="h-4 w-4 text-white" />
                   </button>
                 </div>
               ) : (
-                <div className="text-center p-4">
-                  <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-300">
-                    <span className="hidden md:inline">
-                      Arrastra tu foto aquí o
-                    </span>
-                  </p>
-                  <Button
-                    variant="secondary"
-                    className="mt-4"
-                    onClick={handleUserFileSelect}
-                  >
-                    Seleccionar Foto
-                  </Button>
+                <div className="text-center p-6">
+                  <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <button onClick={onPickUser} className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white">Seleccionar foto</button>
                   <input
+                    ref={userInputRef}
                     type="file"
-                    ref={userFileInputRef}
-                    onChange={handleUserFileChange}
                     accept="image/*"
                     className="hidden"
+                    onChange={(e) => onFileToDataUrl(e.target.files?.[0], setUserImage)}
                   />
                 </div>
               )}
-              {dragActive && (
-                <div className="absolute inset-0 bg-purple-900/20 rounded-xl border-4 border-dashed border-purple-500 flex items-center justify-center">
-                  <p className="text-white font-medium text-lg">
-                    Suelta tu foto aquí
-                  </p>
-                </div>
-              )}
             </div>
-          </div>
+          </section>
 
-          {/* Sección de selección de prendas */}
-          <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 p-2 md:p-6">
-            <h3 className="text-xl font-semibold text-white p-2 sm:mb-4 ">
-              Seleccionar Prenda
-            </h3>
-            <div className="">
-              {[...Array(1)].map((_, index) => (
-                <div key={`clothing-slot-${index}`} className="relative">
-                  <div
-                    className={`aspect-[3/4] bg-gray-700/50 rounded-xl border-dashed border-2 border-gray-600 ${dragActiveClothing === index ? "border-purple-500" : ""} flex items-center justify-center relative cursor-pointer`}
-                    onDragEnter={(e) => handleClothingDrag(index, e)}
-                    onDragLeave={(e) => handleClothingDrag(index, e)}
-                    onDragOver={(e) => handleClothingDrag(index, e)}
-                    onDrop={(e) => handleClothingDrop(index, e)}
+          {/* Prenda */}
+          <section className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-4">
+            <h3 className="text-white font-semibold mb-3">Prenda (IMAGE_1)</h3>
+            <div className="aspect-[3/4] bg-gray-900/50 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center relative">
+              {garmentImage ? (
+                <div className="w-full h-full relative">
+                  <img src={garmentImage} alt="garment" crossOrigin="anonymous" className="w-full h-full object-contain rounded-xl" />
+                  <button
+                    onClick={() => setGarmentImage(null)}
+                    className="absolute top-2 right-2 bg-gray-800/80 hover:bg-gray-700/90 rounded-full p-2"
+                    title="Quitar"
                   >
-                    {clothingImages[index] ? (
-                      <>
-                        <img
-                          src={clothingImages[index]!}
-                          alt={`Prenda ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeClothingImage(index);
-                          }}
-                          className="absolute top-1 right-1 bg-gray-800/80 hover:bg-gray-700/90 rounded-full p-1"
-                        >
-                          <X className="h-4 w-4 text-white" />
-                        </button>
-                      </>
-                    ) : (
-                      <div className="text-center p-2">
-                        <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <Button
-                          variant="secondary"
-                          size="md"
-                          className="text-sm w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleClothingFileSelect(index);
-                          }}
-                        >
-                          Añadir prenda
-                        </Button>
-                        <input
-                          type="file"
-                          ref={(el) => {
-                            clothingFileInputRefs.current[index] = el;
-                          }}
-                          onChange={(e) => handleClothingFileChange(index, e)}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                      </div>
-                    )}
-                    {dragActiveClothing === index && (
-                      <div className="absolute inset-0 bg-purple-900/20 rounded-lg border-4 border-dashed border-purple-500 flex items-center justify-center">
-                        <p className="text-white text-sm font-medium">
-                          Suelta la prenda aquí
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    <X className="h-4 w-4 text-white" />
+                  </button>
                 </div>
-              ))}
-            </div>
-            <Button
-              variant="primary"
-              className="w-full mt-4"
-              onClick={handleGenerate}
-              disabled={
-                !userImage ||
-                clothingImages.every((img) => img === null) ||
-                isLoading
-              }
-            >
-              {isLoading ? "Procesando..." : "Procesar con IA"}
-            </Button>
-          </div>
-
-          {/* Sección de resultados */}
-          {generateEvent && (
-            <div className="bg-gray-800/50 backdrop-blur-xl p-2 md:p-6 rounded-2xl border border-gray-700/50">
-              <h3 className="text-xl font-semibold text-white mb-4">
-                Resultado
-              </h3>
-              <div className="aspect-[3/4] bg-gray-700/50 rounded-xl border border-gray-600 flex items-center justify-center">
-                {response ? (
-                  <img
-                    src={response}
-                    alt="Resultado IA"
-                    className="w-full h-full object-cover rounded-xl"
-                    onError={(e) => {
-                      console.error("Error al cargar la imagen:", e);
-                      setError("La imagen recibida no es válida");
-                      setResponse(null);
-                    }}
+              ) : (
+                <div className="text-center p-6">
+                  <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <button onClick={onPickGarment} className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white">Añadir prenda</button>
+                  <input
+                    ref={garmentInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => onFileToDataUrl(e.target.files?.[0], setGarmentImage)}
                   />
-                ) : (
-                  <div className="text-center">
-                    <Sparkles className="h-16 w-16 text-gray-400 mx-auto mb-4 animate-pulse" />
-                    <p className="text-gray-300">
-                      {isLoading
-                        ? "Generando resultado..."
-                        : "No se recibió ninguna imagen"}
-                    </p>
-                  </div>
-                )}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Resultado */}
+          <section className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-4">
+            <h3 className="text-white font-semibold mb-3">Resultado</h3>
+            <div className="aspect-[3/4] bg-gray-900/50 rounded-xl border border-gray-700 flex items-center justify-center">
+              {previewUrl ? (
+                <img src={previewUrl} alt="resultado" crossOrigin="anonymous" className="w-full h-full object-cover rounded-xl" />
+              ) : (
+                <div className="text-center p-6 text-gray-300">
+                  <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-3 animate-pulse" />
+                  Sin imagen generada aún
+                </div>
+              )}
+            </div>
+            {previewUrl && (
+              <div className="flex gap-2 mt-3">
+                <a
+                  onClick={() => {
+                    const a = document.createElement("a");
+                    a.href = previewUrl;
+                    a.download = `zarpado-fit-${Date.now()}.png`;
+                    a.click();
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-100 cursor-pointer"
+                >
+                  <Download className="h-4 w-4" /> Descargar
+                </a>
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: "Zarpado Fit", url: previewUrl }).catch(() => {});
+                    } else {
+                      navigator.clipboard.writeText(previewUrl);
+                      alert("Enlace copiado al portapapeles");
+                    }
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-100"
+                >
+                  <Share2 className="h-4 w-4" /> Compartir
+                </button>
               </div>
-              {response && (
-                <div className="flex space-x-3 mt-4">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => {
-                      if (response.startsWith("http")) {
-                        window.open(response, "_blank");
-                      } else {
-                        const link = document.createElement("a");
-                        link.href = response;
-                        link.download = `zarpado-fit-resultado-${Date.now()}.jpg`;
-                        link.click();
-                      }
-                    }}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {response.startsWith("http") ? "Ver imagen" : "Descargar"}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => {
-                      if (navigator.share) {
-                        navigator
-                          .share({
-                            title: "Mi look de Zarpado Fit",
-                            text: "Mira cómo me queda esta prenda con el probador virtual de Zarpado Fit",
-                            url: response,
-                          })
-                          .catch(console.error);
-                      } else {
-                        navigator.clipboard.writeText(response);
-                        alert("Enlace de la imagen copiado al portapapeles");
-                      }
-                    }}
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Compartir
-                  </Button>
-                </div>
-              )}
-            </div>
+            )}
+          </section>
+        </div>
+
+        {/* Acciones */}
+        <div className="mt-6 flex items-center gap-3">
+          <button
+            onClick={tryOnInBrowser}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-60"
+          >
+            <Sparkles className="h-4 w-4" /> {isLoading ? "Procesando..." : "Procesar con IA"}
+          </button>
+          {modelText && (
+            <span className="text-xs text-gray-400">Modelo: {modelText}</span>
           )}
         </div>
+
+        {/* Errores */}
+        {error && (
+          <div className="mt-4 bg-red-600/90 text-white p-3 rounded-lg flex items-start gap-2">
+            <strong className="mt-0.5">Error:</strong>
+            <span>{error}</span>
+          </div>
+        )}
+  {/* Modal API Key (solo si falta) */}
+  {showKeyModal && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 w-full max-w-md">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-white font-semibold">Configurar API Key</h4>
+          <button onClick={() => setShowKeyModal(false)} className="p-1 rounded hover:bg-gray-700">
+            <X className="h-4 w-4 text-gray-200" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-300 mb-3">Pegá tu <code>GEMINI_API_KEY</code>. Se guardará en <code>localStorage</code> para próximas veces.</p>
+        <input
+          type="password"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          placeholder="AIzaSyCkca22Cz25WiNhUlymX3K-Lx1RyrRxrD8"
+          className="w-full rounded-xl bg-gray-900 text-gray-100 p-3 outline-none border border-gray-700 focus:border-purple-500"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <button onClick={() => setShowKeyModal(false)} className="px-4 py-2 rounded-lg bg-gray-700 text-gray-100 hover:bg-gray-600">Cancelar</button>
+          <button onClick={() => { if (!apiKey?.trim()) { setError('Pegá tu GEMINI_API_KEY'); return; } setShowKeyModal(false); }} className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-500">Guardar</button>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">No uses esto en producción. Mover llamadas a backend.</p>
       </div>
     </div>
+  )}
+</div>
+    </div>
   );
-};
+}
+
